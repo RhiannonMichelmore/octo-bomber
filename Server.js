@@ -13,11 +13,11 @@ let connectedClients = {};
 let cells = [];
 let dimx = 100, dimy = 100;
 
-let EMPTY = "EMPTY";
-let BLOCK = "BLOCK";
-let BRICK = "BRICK";
-let BOMB  = "BOMB";
-let FIRE  = "FIRE";
+let EMPTY = 'EMPTY';
+let BLOCK = 'BLOCK';
+let BRICK = 'BRICK';
+let BOMB  = 'BOMB';
+let FIRE  = 'FIRE';
 
 function initializeGrid() {
     for (let row = 0; row < dimy; row++) {
