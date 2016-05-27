@@ -10,6 +10,7 @@ function getUserID() {
 }
 
 let connectedClients = {};
+let userMap = {};
 let cells = [];
 let dimx = 100, dimy = 100;
 
@@ -31,11 +32,10 @@ function initializeGrid() {
 initializeGrid();
 
 var sendUpdate = () => {
-    let data = {clock: tick, grid: cells};
+    let data = {clock: tick, grid: cells, userMap: userMap};
     for (client in connectedClients) {
         connectedClients[client].sendUTF(JSON.stringify(data));
     }
-
     tick++;
 }
 
@@ -67,6 +67,7 @@ wsServer.on('request', (request) => {
     console.log((new Date()) + ' Client ' + request.origin + ' userID: ' + userID + ' at ' + coordx + ',' + coordy);
 
     connectedClients[userID] = conn;
+    userMap[userID] = {x: coordx, y: coordy};
 
     conn.on('message', (message) => {
         if (message.type === 'utf8') {
@@ -78,6 +79,7 @@ wsServer.on('request', (request) => {
                     if (checkGrid(newx, newy)) {
                         conn.sendUTF(JSON.stringify({result: "success", newx: newx, newy: newy}));
                         coordx = newx, coordy = newy;
+                        userMap[userID] = {x: coordx, y: coordy};
                     } else {
                         conn.sendUTF(JSON.stringify({error: true, message: "Invalid movement"}));
                     }
@@ -87,6 +89,7 @@ wsServer.on('request', (request) => {
                     if (checkGrid(newx, newy)) {
                         conn.sendUTF(JSON.stringify({result: "success", newx: newx, newy: newy}));
                         coordx = newx, coordy = newy;
+                        userMap[userID] = {x: coordx, y: coordy};
                     } else {
                         conn.sendUTF(JSON.stringify({error: true, message: "Invalid movement"}));
                     }
@@ -96,6 +99,7 @@ wsServer.on('request', (request) => {
                     if (checkGrid(newx, newy)) {
                         conn.sendUTF(JSON.stringify({result: "success", newx: newx, newy: newy}));
                         coordx = newx, coordy = newy;
+                        userMap[userID] = {x: coordx, y: coordy};
                     } else {
                         conn.sendUTF(JSON.stringify({error: true, message: "Invalid movement"}));
                     }
@@ -105,6 +109,7 @@ wsServer.on('request', (request) => {
                     if (checkGrid(newx, newy)) {
                         conn.sendUTF(JSON.stringify({result: "success", newx: newx, newy: newy}));
                         coordx = newx, coordy = newy;
+                        userMap[userID] = {x: coordx, y: coordy};
                     } else {
                         conn.sendUTF(JSON.stringify({error: true, message: "Invalid movement"}));
                     }
