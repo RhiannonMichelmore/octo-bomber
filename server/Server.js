@@ -79,7 +79,7 @@ wsServer.on('request', (request) => {
                         conn.sendUTF(JSON.stringify({result: "success", newx: newx, newy: newy}));
                         coordx = newx, coordy = newy;
                     } else {
-                        conn.sendUTF({error: true, message: "Invalid movement"});
+                        conn.sendUTF(JSON.stringify({error: true, message: "Invalid movement"}));
                     }
                     break;
                 case 'movedown':
@@ -88,7 +88,7 @@ wsServer.on('request', (request) => {
                         conn.sendUTF(JSON.stringify({result: "success", newx: newx, newy: newy}));
                         coordx = newx, coordy = newy;
                     } else {
-                        conn.sendUTF({error: true, message: "Invalid movement"});
+                        conn.sendUTF(JSON.stringify({error: true, message: "Invalid movement"}));
                     }
                     break;
                 case 'moveleft':
@@ -97,7 +97,7 @@ wsServer.on('request', (request) => {
                         conn.sendUTF(JSON.stringify({result: "success", newx: newx, newy: newy}));
                         coordx = newx, coordy = newy;
                     } else {
-                        conn.sendUTF({error: true, message: "Invalid movement"});
+                        conn.sendUTF(JSON.stringify({error: true, message: "Invalid movement"}));
                     }
                     break;
                 case 'moveright':
@@ -106,7 +106,7 @@ wsServer.on('request', (request) => {
                         conn.sendUTF(JSON.stringify({result: "success", newx: newx, newy: newy}));
                         coordx = newx, coordy = newy;
                     } else {
-                        conn.sendUTF({error: true, message: "Invalid movement"});
+                        conn.sendUTF(JSON.stringify({error: true, message: "Invalid movement"}));
                     }
                     break;
                 break;
