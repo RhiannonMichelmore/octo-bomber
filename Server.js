@@ -55,9 +55,10 @@ wsServer = new WebSocketServer({
 });
 
 wsServer.on('request', (request) => {
-    var conn = request.accept('octo-bomber', request.origin);
-    var userID = getUserID();
-    console.log((new Date()) + ' Client ' + request.origin + ' userID: ' + userID);
+    let conn = request.accept('octo-bomber', request.origin);
+    let userID = getUserID();
+    let coordx = Math.floor(Math.random() * dimy), coordy = Math.floor(Math.random() * dimx);
+    console.log((new Date()) + ' Client ' + request.origin + ' userID: ' + userID + ' at ' + coordx + ',' + coordy);
 
     connectedClients[userID] = conn;
 
