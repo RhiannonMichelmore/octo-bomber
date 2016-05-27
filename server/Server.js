@@ -54,6 +54,12 @@ wsServer = new WebSocketServer({
     httpServer: server,
 });
 
+function checkGrid(x, y) {
+    if (x < 0 || y < 0 || x >= dimx || y >= dimy) return false;
+    if (cells[x][y] != EMPTY) return false;
+    return true;
+}
+
 wsServer.on('request', (request) => {
     let conn = request.accept('octo-bomber', request.origin);
     let userID = getUserID();
@@ -64,8 +70,50 @@ wsServer.on('request', (request) => {
 
     conn.on('message', (message) => {
         if (message.type === 'utf8') {
-            console.log('Received message ' + message.utf8Data + ' from user ' + userID);
-            conn.sendUTF(message.utf8Data);
+            let parsed = JSON.parse(message.utf8Data);
+            let newx = 0, newy = 0;
+            switch (parsed.action) {
+                case 'moveup':
+                    newx = coordx, newy = coordy - 1;
+                    if (checkGrid(newx, newy)) {
+                        conn.sendUTF(JSON.stringify({result: "success", newx: newx, newy: newy}));
+                        coordx = newx, coordy = newy;
+                    } else {
+                        conn.sendUTF({error: true, message: "Invalid movement"});
+                    }
+                    break;
+                case 'movedown':
+                    newx = coordx, newy = coordy + 1;
+                    if (checkGrid(newx, newy)) {
+                        conn.sendUTF(JSON.stringify({result: "success", newx: newx, newy: newy}));
+                        coordx = newx, coordy = newy;
+                    } else {
+                        conn.sendUTF({error: true, message: "Invalid movement"});
+                    }
+                    break;
+                case 'moveleft':
+                    newx = coordx - 1, newy = coordy;
+                    if (checkGrid(newx, newy)) {
+                        conn.sendUTF(JSON.stringify({result: "success", newx: newx, newy: newy}));
+                        coordx = newx, coordy = newy;
+                    } else {
+                        conn.sendUTF({error: true, message: "Invalid movement"});
+                    }
+                    break;
+                case 'moveright':
+                    newx = coordx + 1, newy = coordy;
+                    if (checkGrid(newx, newy)) {
+                        conn.sendUTF(JSON.stringify({result: "success", newx: newx, newy: newy}));
+                        coordx = newx, coordy = newy;
+                    } else {
+                        conn.sendUTF({error: true, message: "Invalid movement"});
+                    }
+                    break;
+                break;
+                default:
+                    conn.sendUTF(JSON.stringify({error: true, message: "Unknown command"}));
+                    break;
+            }
         }
     });
 
