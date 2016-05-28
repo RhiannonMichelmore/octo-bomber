@@ -125,5 +125,6 @@ wsServer.on('request', (request) => {
     conn.on('close', (reasonCode, description) => {
         console.log((new Date()) + 'Peer ' + conn.remoteAddress + ' has disconnected!');
         delete connectedClients[userID];
+        delete userMap[userID];
     });
 });
