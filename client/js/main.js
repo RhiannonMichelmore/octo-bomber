@@ -48,10 +48,6 @@ function init(){
 			width:   64,
 			height:  64,
 			count:   12,
-			regX:    0,
-			regY:    0,
-			spacing: 0,
-			margin:  0
 		},
 		animations: {
 			EMPTY: 0,
@@ -67,15 +63,11 @@ function init(){
 	playerSprites = new createjs.SpriteSheet({
 		images: [
 			'./assets/character/sprite_sheets/panda_idle_sheet_64x64.png',
-			],
+		],
 		frames: {
 			width:   64,
 			height:  64,
 			count:   2,
-			regX:    0,
-			regY:    0,
-			spacing: 0,
-			margin:  0
 		},
 		animations: {
 			IDLE: [0, 1, 'IDLE', 0.08],
@@ -89,8 +81,6 @@ function init(){
 	socket.onmessage = updateLoop;
 
 	player = makePlayer();
-	player.sprite.gotoAndPlay(player.state);
-	//sendCommand('newPlayer', player);
 
 	stage.update();
 	createjs.Ticker.timingMode = createjs.Ticker.RAF;
@@ -100,15 +90,21 @@ function init(){
 }
 
 function handleInput(event){
-	console.log(event);
-	if(event.which == 37)
-		sendCommand('moveleft');
-	if(event.which == 38)
-		sendCommand('moveup');
-	if(event.which == 39)
-		sendCommand('moveright');
-	if(event.which == 40)
-		sendCommand('movedown');
+	switch(event.which)
+	{
+		case 37:
+			sendCommand('moveleft');
+			break;
+		case 38:
+			sendCommand('moveup');
+			break;
+		case 39:
+			sendCommand('moveright');
+			break;
+		case 40:
+			sendCommand('movedown');
+			break;
+	}
 }
 
 function createBoard(){
@@ -118,15 +114,7 @@ function createBoard(){
 		board[y] = [];
 		for(let x=0; x<gridSize.x; ++x)
 		{
-			let state = [
-				'EMPTY',
-				'BLOCK',
-				'BRICK',
-				'BOMB0',
-				'BOMB1',
-				'BOMB2',
-				'FIRE',
-			][Math.floor(Math.random()*7)];
+			let state = 'EMPTY';
 			board[y][x] = {
 				state:  state,
 				sprite: createCell(x, y),
@@ -142,6 +130,13 @@ function createCell(x, y){
 	sprite.x = x * cellSize.x;
 	sprite.y = y * cellSize.y;
 	stage.addChild(sprite);
+
+	let background = new createjs.Sprite(sprites, 'EMPTY');
+	background.x = x * cellSize.x;
+	background.y = y * cellSize.y;
+	stage.addChild(background);
+	stage.setChildIndex(background, 1);
+
 	return sprite;
 }
 
@@ -151,18 +146,12 @@ function drawBoard(){
 }
 
 function renderCell(cell){
-	if (cell.state == 'BOMB0' || cell.state=='BOMB1' || cell.state=='BOMB2' || cell.state == 'FIRE')
-	{
-		let sprite = new createjs.Sprite(sprites, 'EMPTY');
-		sprite.x = cell.x * cellSize.x;
-		sprite.y = cell.y * cellSize.y;
-		stage.addChild(sprite);
-	}
-	stage.setChildIndex(cell.sprite, stage.getNumChildren()-1);
 	cell.sprite.gotoAndPlay(cell.state);
 }
 
 function renderPlayer(){
+	player.sprite.x = player.pos.x * cellSize.x;
+	player.sprite.y = player.pos.y * cellSize.y;
 	player.sprite.gotoAndPlay(player.state);
 }
 
@@ -170,11 +159,14 @@ function updateLoop(event)
 {
 	let data = JSON.parse(event.data);
 	console.log(data);
-	_.each(data.grid, function(row){
-		_.each(row, function(cell){
-			board[cell.y][cell.x].state = cell.state;
-			renderCell(board[cell.y][cell.x]);
-		});
+	_(data.grid)
+	.flatten()
+	.each(function(cell){
+		board[cell.y][cell.x].state = cell.state;
+		renderCell(board[cell.y][cell.x]);
+	});
+	_.each(data.userMap, function(user){
+		player.pos = user;
 	});
 	renderPlayer();
 	stage.update();
@@ -182,17 +174,17 @@ function updateLoop(event)
 
 function makePlayer(){
 	let pos = {
-			x: 1,
-			y: 1,
-		};
+		x: 1,
+		y: 1,
+	};
 	let sprite = new createjs.Sprite(playerSprites, 'normal');
-	sprite.x = pos.x * cellSize.x;
-	sprite.y = pos.y * cellSize.y;
+	sprite.x   = pos.x * cellSize.x;
+	sprite.y   = pos.y * cellSize.y;
 	let localPlayer = {
-		name: 'panda',
-		pos:pos,
-		state: 'IDLE',
-		sprite:sprite,
+		name:   'panda',
+		pos:    pos,
+		state:  'IDLE',
+		sprite: sprite,
 	};
 	stage.addChild(localPlayer.sprite);
 	return localPlayer;
