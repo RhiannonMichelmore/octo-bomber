@@ -103,7 +103,7 @@ wsServer.on('request', (request) => {
 					newx = coordx + 1, newy = coordy;
 					break;
 				case 'getID':
-					conn.sendUTF(JSON.stringify({userID: userID}));
+					conn.sendUTF(JSON.stringify({type: 'userid', userID: userID}));
 					return;
 				case 'placebomb':
 					cells[coordx][coordy] = {state: BOMB0, x: coordx, y: coordy};
