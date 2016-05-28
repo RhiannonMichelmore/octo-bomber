@@ -1,6 +1,5 @@
-$().ready(function(){
-	init();
-});
+//$(document).ready(init);
+window.onload = init;
 
 let gridSize = {
 	x: 10,
@@ -8,18 +7,18 @@ let gridSize = {
 };
 
 let cellSize = {
-	x: 20,
-	y: 20,
+	x: 64,
+	y: 64,
 }
 
 $('#octo-bomber-board').on('click', function(){
 	updateLoop({
 		data: {
 			board: [
-				{x: 2, y: 2, state: 4},
-				{x: 3, y: 2, state: 4},
-				{x: 2, y: 3, state: 4},
-				{x: 3, y: 3, state: 4},
+				{x: 2, y: 2, state: 'FIRE'},
+				{x: 3, y: 2, state: 'FIRE'},
+				{x: 2, y: 3, state: 'FIRE'},
+				{x: 3, y: 3, state: 'FIRE'},
 			],
 		},
 	});
@@ -29,18 +28,49 @@ let socket;
 let player;
 let board;
 let stage;
+let sprites;
 
 function init(){
 	stage = new createjs.Stage('octo-bomber-board');
+
+	sprites = new createjs.SpriteSheet({
+		images: [
+			'./assets/floor/sprite_sheets/floor_sheet_64x64.png',
+			'./assets/wall/sprite_sheets/unbreakable_block_sheet_64x64.png',
+			'./assets/wall/sprite_sheets/breakable_block_sheet_64x64.png',
+			'./assets/bomb/sprite_sheets/bomb_new_sheet_64x64.png',
+			'./assets/bomb/sprite_sheets/bomb_explode_sheet_64x64.png',
+		],
+		frames: {
+			width:   64,
+			height:  64,
+			count:   8,
+			regX:    0,
+			regY:    0,
+			spacing: 0,
+			margin:  0
+		},
+		animations: {
+			EMPTY: 0,
+			BLOCK: 1,
+			BRICK: 2,
+			BOMB:  [3, 4, 'BOMB', 0.2],
+			FIRE:  [5, 7, 'FIRE', 0.1],
+		},
+	});
 
 	createBoard();
 	drawBoard();
 
 	//socket = new WebSocket('ws://zed0.co.uk:8080', 'octo-bomber');
+	//socket.onmessage = updateLoop;
+
 	player = makePlayer();
 	//sendCommand('newPlayer', player);
 
-	//socket.onmessage = updateLoop;
+	stage.update();
+	createjs.Ticker.timingMode = createjs.Ticker.RAF;
+	createjs.Ticker.addEventListener("tick", stage);
 }
 
 function createBoard(){
@@ -50,20 +80,29 @@ function createBoard(){
 		board[y] = [];
 		for(let x=0; x<gridSize.x; ++x)
 		{
+			let state = [
+				'EMPTY',
+				'BLOCK',
+				'BRICK',
+				'BOMB',
+				'FIRE',
+			][Math.floor(Math.random()*4)];
 			board[y][x] = {
-				state: Math.floor(Math.random()*4),
-				shape: createShape(x, y),
-				x:     x,
-				y:     y,
+				state:  state,
+				sprite: createCell(x, y),
+				x:      x,
+				y:      y,
 			};
 		}
 	}
 }
 
-function createShape(x, y){
-	let shape = new createjs.Shape();
-	stage.addChild(shape);
-	return shape;
+function createCell(x, y){
+	let sprite = new createjs.Sprite(sprites, 'normal');
+	sprite.x = x * cellSize.x;
+	sprite.y = y * cellSize.y;
+	stage.addChild(sprite);
+	return sprite;
 }
 
 function drawBoard(){
@@ -71,34 +110,15 @@ function drawBoard(){
 	stage.update();
 }
 
-function getCellColor(cell){
-	if(cell.state === 0)
-		return '#ff0000';
-	if(cell.state === 1)
-		return '#00ff00';
-	if(cell.state === 2)
-		return '#0000ff';
-	if(cell.state === 3)
-		return '#ffff00';
-	if(cell.state === 4)
-		return '#00ffff';
-}
-
 function renderCell(cell){
-	cell.shape.graphics
-	.beginFill(getCellColor(cell))
-	.drawRect(
-		cell.x * cellSize.x,
-		cell.y * cellSize.y,
-		cellSize.x - 1,
-		cellSize.y - 1
-	);
+	cell.sprite.gotoAndPlay(cell.state);
 }
 
 function updateLoop(event)
 {
 	console.log(event.data);
 	_.each(event.data.board, function(cell){
+		console.log(cell);
 		board[cell.y][cell.x].state = cell.state;
 		renderCell(board[cell.y][cell.x]);
 	});
