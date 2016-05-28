@@ -79,6 +79,9 @@ function init(){
 
 	socket = new WebSocket('ws://uwcs.co.uk:7080', 'octo-bomber');
 	socket.onmessage = updateLoop;
+	socket.onopen = function(){
+		sendCommand('getID');
+	};
 
 	player = makePlayer();
 
@@ -159,14 +162,20 @@ function updateLoop(event)
 {
 	let data = JSON.parse(event.data);
 	console.log(data);
+	if(data.userID){
+		player.id = data.userID;
+		return;
+	}
+
 	_(data.grid)
 	.flatten()
 	.each(function(cell){
 		board[cell.y][cell.x].state = cell.state;
 		renderCell(board[cell.y][cell.x]);
 	});
-	_.each(data.userMap, function(user){
-		player.pos = user;
+	_.each(data.userMap, function(pos, userID){
+		if(Number(userID) === player.id)
+			player.pos = pos;
 	});
 	renderPlayer();
 	stage.update();
@@ -182,6 +191,7 @@ function makePlayer(){
 	sprite.y   = pos.y * cellSize.y;
 	let localPlayer = {
 		name:   'panda',
+		id:     undefined,
 		pos:    pos,
 		state:  'IDLE',
 		sprite: sprite,
