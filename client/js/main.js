@@ -95,17 +95,20 @@ function init(){
 function handleInput(event){
 	switch(event.which)
 	{
-		case 37:
+		case 37: //left
 			sendCommand('moveleft');
 			break;
-		case 38:
+		case 38: //up
 			sendCommand('moveup');
 			break;
-		case 39:
+		case 39: //right
 			sendCommand('moveright');
 			break;
-		case 40:
+		case 40: //down
 			sendCommand('movedown');
+			break;
+		case 32: //Space
+			sendCommand('placebomb');
 			break;
 	}
 }
@@ -161,24 +164,29 @@ function renderPlayer(){
 function updateLoop(event)
 {
 	let data = JSON.parse(event.data);
-	console.log(data);
-	if(data.userID){
-		player.id = data.userID;
-		return;
+	switch(data.type)
+	{
+		case 'userid':
+			player.id = data.userID;
+			break;
+		case 'tick':
+			_(data.grid)
+			.flatten()
+			.each(function(cell){
+				board[cell.y][cell.x].state = cell.state;
+				renderCell(board[cell.y][cell.x]);
+			});
+			_.each(data.userMap, function(pos, userID){
+				if(Number(userID) === player.id)
+					player.pos = pos;
+			});
+			renderPlayer();
+			stage.update();
+			break;
+		case 'update':
+			console.log(data);
+			break;
 	}
-
-	_(data.grid)
-	.flatten()
-	.each(function(cell){
-		board[cell.y][cell.x].state = cell.state;
-		renderCell(board[cell.y][cell.x]);
-	});
-	_.each(data.userMap, function(pos, userID){
-		if(Number(userID) === player.id)
-			player.pos = pos;
-	});
-	renderPlayer();
-	stage.update();
 }
 
 function makePlayer(){
