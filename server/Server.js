@@ -19,7 +19,7 @@ let dimx = 100, dimy = 100;
 let EMPTY = 'EMPTY';
 let BLOCK = 'BLOCK';
 let BRICK = 'BRICK';
-let BOMB  = 'BOMB0';
+let BOMB0  = 'BOMB0';
 let BOMB1 = 'BOMB1';
 let BOMB2 = 'BOMB2';
 let FIRE  = 'FIRE';
@@ -30,8 +30,29 @@ function initializeGrid() {
 		for (let col = 0; col < dimx; col++) {
 			cells[row][col] = {
 				state: EMPTY,
-				x:     col,
-				y:     row,
+				x:	   col,
+				y:	   row,
+			}
+		}
+	}
+}
+
+function decayBomb(row, col) {
+	cells[row][col].state = EMPTY;
+}
+
+function decayGrid() {
+	for (let row = 0; row < dimy; row++) {
+		for (let col = 0; col < dimx; col++) {
+			switch (cells[row][col].state) {
+				case BOMB0:
+					cells[row][col].state = BOMB1;
+					break;
+				case BOMB1:
+					cells[row][col].state = BOMB2;
+					break;
+				case BOMB2:
+					decayBomb(row, col);
 			}
 		}
 	}
@@ -40,6 +61,7 @@ function initializeGrid() {
 initializeGrid();
 
 var sendUpdate = () => {
+	decayGrid()
 	let data = {type: 'tick', clock: tick, grid: cells, userMap: userMap};
 	for (client in connectedClients) {
 		connectedClients[client].sendUTF(JSON.stringify(data));
