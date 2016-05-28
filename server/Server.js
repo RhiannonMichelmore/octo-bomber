@@ -103,6 +103,10 @@ wsServer.on('request', (request) => {
 				case 'getID':
 					conn.sendUTF(JSON.stringify({userID: userID}));
 					return;
+				case 'placebomb':
+					cells[coordx][coordy] = {state: BOMB, x: coordx, y: coordy};
+					conn.sendUTF(JSON.stringify({type: "update", result: "success", message: "Bomb placed!"}));
+					return;
 				default:
 					conn.sendUTF(JSON.stringify({type: "update", result: "error", message: "Unknown command"}));
 					return;
