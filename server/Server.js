@@ -25,7 +25,11 @@ function initializeGrid() {
 	for (let row = 0; row < dimy; row++) {
 		cells.push([]);
 		for (let col = 0; col < dimx; col++) {
-			cells[row][col] = EMPTY;
+			cells[row][col] = {
+				state: EMPTY,
+				x:     col,
+				y:     row,
+			}
 		}
 	}
 }
@@ -57,7 +61,7 @@ wsServer = new WebSocketServer({
 
 function checkGrid(x, y) {
 	if (x < 0 || y < 0 || x >= dimx || y >= dimy) return false;
-	if (cells[x][y] != EMPTY) return false;
+	if (cells[x][y].state !== EMPTY) return false;
 	return true;
 }
 
@@ -73,52 +77,32 @@ wsServer.on('request', (request) => {
 	conn.on('message', (message) => {
 		if (message.type === 'utf8') {
 			let parsed = JSON.parse(message.utf8Data);
+			console.log(parsed);
 			let newx = 0, newy = 0;
 			switch (parsed.action) {
 				case 'moveup':
 					newx = coordx, newy = coordy - 1;
-					if (checkGrid(newx, newy)) {
-						conn.sendUTF(JSON.stringify({result: "success", newx: newx, newy: newy}));
-						coordx = newx, coordy = newy;
-						userMap[userID] = {x: coordx, y: coordy};
-					} else {
-						conn.sendUTF(JSON.stringify({error: true, message: "Invalid movement"}));
-					}
 					break;
 				case 'movedown':
 					newx = coordx, newy = coordy + 1;
-					if (checkGrid(newx, newy)) {
-						conn.sendUTF(JSON.stringify({result: "success", newx: newx, newy: newy}));
-						coordx = newx, coordy = newy;
-						userMap[userID] = {x: coordx, y: coordy};
-					} else {
-						conn.sendUTF(JSON.stringify({error: true, message: "Invalid movement"}));
-					}
 					break;
 				case 'moveleft':
 					newx = coordx - 1, newy = coordy;
-					if (checkGrid(newx, newy)) {
-						conn.sendUTF(JSON.stringify({result: "success", newx: newx, newy: newy}));
-						coordx = newx, coordy = newy;
-						userMap[userID] = {x: coordx, y: coordy};
-					} else {
-						conn.sendUTF(JSON.stringify({error: true, message: "Invalid movement"}));
-					}
 					break;
 				case 'moveright':
 					newx = coordx + 1, newy = coordy;
-					if (checkGrid(newx, newy)) {
-						conn.sendUTF(JSON.stringify({result: "success", newx: newx, newy: newy}));
-						coordx = newx, coordy = newy;
-						userMap[userID] = {x: coordx, y: coordy};
-					} else {
-						conn.sendUTF(JSON.stringify({error: true, message: "Invalid movement"}));
-					}
-					break;
 					break;
 				default:
 					conn.sendUTF(JSON.stringify({error: true, message: "Unknown command"}));
-					break;
+					return;
+			}
+
+			if (checkGrid(newx, newy)) {
+				conn.sendUTF(JSON.stringify({result: "success", newx: newx, newy: newy}));
+				coordx = newx, coordy = newy;
+				userMap[userID] = {x: coordx, y: coordy};
+			} else {
+				conn.sendUTF(JSON.stringify({error: true, message: "Invalid movement"}));
 			}
 		}
 	});
@@ -129,3 +113,4 @@ wsServer.on('request', (request) => {
 		delete userMap[userID];
 	});
 });
+
