@@ -12,6 +12,7 @@ function getUserID() {
 
 let connectedClients = {};
 let userMap = {};
+let moved = [];
 let cells = [];
 let dimx = 100, dimy = 100;
 
@@ -41,6 +42,7 @@ var sendUpdate = () => {
 	for (client in connectedClients) {
 		connectedClients[client].sendUTF(JSON.stringify(data));
 	}
+	moved = [];
 	tick++;
 }
 
@@ -78,6 +80,12 @@ wsServer.on('request', (request) => {
 		if (message.type === 'utf8') {
 			let parsed = JSON.parse(message.utf8Data);
 			console.log(parsed);
+
+			if (moved.indexOf(userID) > -1) {
+				conn.sendUTF(JSON.stringify({error: true, message: "Already moved this tick, ignoring!"}));
+				return;
+			}
+
 			let newx = 0, newy = 0;
 			switch (parsed.action) {
 				case 'moveup':
@@ -92,6 +100,9 @@ wsServer.on('request', (request) => {
 				case 'moveright':
 					newx = coordx + 1, newy = coordy;
 					break;
+				case 'getID':
+					conn.sendUTF(JSON.stringify({userID: userID}));
+					return;
 				default:
 					conn.sendUTF(JSON.stringify({error: true, message: "Unknown command"}));
 					return;
@@ -101,6 +112,7 @@ wsServer.on('request', (request) => {
 				conn.sendUTF(JSON.stringify({result: "success", newx: newx, newy: newy}));
 				coordx = newx, coordy = newy;
 				userMap[userID] = {x: coordx, y: coordy};
+				moved.push(userID);
 			} else {
 				conn.sendUTF(JSON.stringify({error: true, message: "Invalid movement"}));
 			}
