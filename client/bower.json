@@ -1,0 +1,23 @@
+{
+  "name": "octo-bomber-client",
+  "homepage": "https://github.com/RhiannonMichelmore/octo-bomber",
+  "authors": [
+    "Ben Falconer <ben@falconers.me.uk>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "EaselJS": "easeljs#^0.8.2",
+    "jquery": "^2.2.4",
+    "lodash": "^4.13.1"
+  }
+}
