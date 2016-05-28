@@ -41,11 +41,13 @@ function init(){
 			'./assets/wall/sprite_sheets/breakable_block_sheet_64x64.png',
 			'./assets/bomb/sprite_sheets/bomb_new_sheet_64x64.png',
 			'./assets/bomb/sprite_sheets/bomb_explode_sheet_64x64.png',
+			'./assets/bomb/sprite_sheets/bomb_second_sheet_64x64.png',
+			'./assets/bomb/sprite_sheets/bomb_pulse_sheet_64x64.png',
 		],
 		frames: {
 			width:   64,
 			height:  64,
-			count:   8,
+			count:   12,
 			regX:    0,
 			regY:    0,
 			spacing: 0,
@@ -55,7 +57,9 @@ function init(){
 			EMPTY: 0,
 			BLOCK: 1,
 			BRICK: 2,
-			BOMB:  [3, 4, 'BOMB', 0.2],
+			BOMB0:  [3, 4, 'BOMB0', 0.2],
+			BOMB1:  [8, 9, 'BOMB1', 0.2],
+			BOMB2:  [10, 11, 'BOMB2', 0.1],
 			FIRE:  [5, 7, 'FIRE', 0.1],
 		},
 	});
@@ -67,7 +71,7 @@ function init(){
 		frames: {
 			width:   64,
 			height:  64,
-			count:   8,
+			count:   2,
 			regX:    0,
 			regY:    0,
 			spacing: 0,
@@ -118,9 +122,11 @@ function createBoard(){
 				'EMPTY',
 				'BLOCK',
 				'BRICK',
-				'BOMB',
+				'BOMB0',
+				'BOMB1',
+				'BOMB2',
 				'FIRE',
-			][Math.floor(Math.random()*4)];
+			][Math.floor(Math.random()*7)];
 			board[y][x] = {
 				state:  state,
 				sprite: createCell(x, y),
@@ -145,7 +151,7 @@ function drawBoard(){
 }
 
 function renderCell(cell){
-	if (cell.state == 'BOMB' || cell.state == 'FIRE')
+	if (cell.state == 'BOMB0' || cell.state=='BOMB1' || cell.state=='BOMB2' || cell.state == 'FIRE')
 	{
 		let sprite = new createjs.Sprite(sprites, 'EMPTY');
 		sprite.x = cell.x * cellSize.x;
