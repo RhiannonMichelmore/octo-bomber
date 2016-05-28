@@ -111,6 +111,14 @@ function drawBoard(){
 }
 
 function renderCell(cell){
+	if (cell.state == "BOMB" || cell.state == "FIRE")
+	{
+		let sprite = new createjs.Sprite(sprites, 'EMPTY');
+		sprite.x = cell.x * cellSize.x;
+		sprite.y = cell.y * cellSize.y;
+		stage.addChild(sprite);
+	}
+	stage.setChildIndex(cell.sprite, stage.getNumChildren()-1);
 	cell.sprite.gotoAndPlay(cell.state);
 }
 
