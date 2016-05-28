@@ -38,7 +38,7 @@ function initializeGrid() {
 initializeGrid();
 
 var sendUpdate = () => {
-	let data = {clock: tick, grid: cells, userMap: userMap};
+	let data = {type: "tick", clock: tick, grid: cells, userMap: userMap};
 	for (client in connectedClients) {
 		connectedClients[client].sendUTF(JSON.stringify(data));
 	}
@@ -82,7 +82,7 @@ wsServer.on('request', (request) => {
 			console.log(parsed);
 
 			if (moved.indexOf(userID) > -1) {
-				conn.sendUTF(JSON.stringify({error: true, message: "Already moved this tick, ignoring!"}));
+				conn.sendUTF(JSON.stringify({type: "update", result: "error", message: "Already moved this tick, ignoring!"}));
 				return;
 			}
 
@@ -104,17 +104,17 @@ wsServer.on('request', (request) => {
 					conn.sendUTF(JSON.stringify({userID: userID}));
 					return;
 				default:
-					conn.sendUTF(JSON.stringify({error: true, message: "Unknown command"}));
+					conn.sendUTF(JSON.stringify({type: "update", result: "error", message: "Unknown command"}));
 					return;
 			}
 
 			if (checkGrid(newx, newy)) {
-				conn.sendUTF(JSON.stringify({result: "success", newx: newx, newy: newy}));
+				conn.sendUTF(JSON.stringify({type: "update", result: "success", newx: newx, newy: newy}));
 				coordx = newx, coordy = newy;
 				userMap[userID] = {x: coordx, y: coordy};
 				moved.push(userID);
 			} else {
-				conn.sendUTF(JSON.stringify({error: true, message: "Invalid movement"}));
+				conn.sendUTF(JSON.stringify({type: "update", result: "error", message: "Invalid movement"}));
 			}
 		}
 	});
