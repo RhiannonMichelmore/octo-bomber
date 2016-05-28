@@ -2,8 +2,8 @@
 window.onload = init;
 
 let gridSize = {
-	x: 10,
-	y: 10
+	x: 100,
+	y: 100
 };
 
 let cellSize = {
@@ -13,14 +13,14 @@ let cellSize = {
 
 $('#octo-bomber-board').on('click', function(){
 	updateLoop({
-		data: {
-			board: [
-				{x: 2, y: 2, state: 'FIRE'},
-				{x: 3, y: 2, state: 'FIRE'},
-				{x: 2, y: 3, state: 'FIRE'},
-				{x: 3, y: 3, state: 'FIRE'},
+		data: JSON.stringify({
+			grid: [
+				[{x: 2, y: 2, state: 'FIRE'}],
+				[{x: 3, y: 2, state: 'FIRE'}],
+				[{x: 2, y: 3, state: 'FIRE'}],
+				[{x: 3, y: 3, state: 'FIRE'}],
 			],
-		},
+		}),
 	});
 });
 
@@ -85,8 +85,8 @@ function init(){
 	createBoard();
 	drawBoard();
 
-	//socket = new WebSocket('ws://zed0.co.uk:8080', 'octo-bomber');
-	//socket.onmessage = updateLoop;
+	socket = new WebSocket('ws://uwcs.co.uk:7080', 'octo-bomber');
+	socket.onmessage = updateLoop;
 
 	player = makePlayer();
 	player.sprite.gotoAndPlay(player.state);
@@ -95,6 +95,20 @@ function init(){
 	stage.update();
 	createjs.Ticker.timingMode = createjs.Ticker.RAF;
 	createjs.Ticker.addEventListener("tick", stage);
+
+	$(document).keydown(handleInput);
+}
+
+function handleInput(event){
+	console.log(event);
+	if(event.which == 37)
+		sendCommand('moveleft');
+	if(event.which == 38)
+		sendCommand('moveup');
+	if(event.which == 39)
+		sendCommand('moveright');
+	if(event.which == 40)
+		sendCommand('movedown');
 }
 
 function createBoard(){
@@ -154,11 +168,13 @@ function renderPlayer(){
 
 function updateLoop(event)
 {
-	console.log(event.data);
-	_.each(event.data.board, function(cell){
-		console.log(cell);
-		board[cell.y][cell.x].state = cell.state;
-		renderCell(board[cell.y][cell.x]);
+	let data = JSON.parse(event.data);
+	console.log(data);
+	_.each(data.grid, function(row){
+		_.each(row, function(cell){
+			board[cell.y][cell.x].state = cell.state;
+			renderCell(board[cell.y][cell.x]);
+		});
 	});
 	renderPlayer();
 	stage.update();
@@ -182,9 +198,8 @@ function makePlayer(){
 	return localPlayer;
 }
 
-function sendCommand(command, args){
-	socket.send({
-		command: command,
-		args:    args,
-	});
+function sendCommand(action){
+	socket.send(JSON.stringify({
+		action: action,
+	}));
 }
